@@ -39,7 +39,7 @@
     }
   },
   "devDependencies": {
-    "mmir-lib": "^6.2.0",
-    "mmir-plugin-exports": "^2.4.0"
+    "mmir-lib": "^7.0.1",
+    "mmir-plugin-exports": "^2.7.1"
   }
 }
