@@ -19,7 +19,7 @@ define(['mmirf/mediaManager', 'mmirf/configurationManager', 'mmirf/languageManag
 	 * @default "ttsMary"
 	 * @memberOf mmir.env.media.MaryWebAudioTTSImpl#
 	 */
-	var _pluginName = 'ttsDFKI';
+	var _pluginName = 'ttsDFKIToHyVeXhr';
 
 	/**
 	 * @readonly
