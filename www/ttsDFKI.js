@@ -19,17 +19,17 @@ define(['mmirf/mediaManager', 'mmirf/configurationManager', 'mmirf/languageManag
 	 * @default "ttsMary"
 	 * @memberOf mmir.env.media.MaryWebAudioTTSImpl#
 	 */
-	var _pluginName = 'ttsMary';
+	var _pluginName = 'ttsDFKI';
 
 	/**
 	 * @readonly
 	 * @inner
-	 * @default "http://mary.dfki.de:59125/"
+	 * @default "https://dfki-3109.dfki.de/"
 	 * @memberOf mmir.env.media.MaryWebAudioTTSImpl#
 	 */
-	var _defaultServerPath = 'http://mary.dfki.de:59125/';
+	var _defaultServerPath = 'https://dfki-3109.dfki.de/';
 
-	return function createMaryTTSImpl(_defaultLogger){
+	return function createDfkiTTSImpl(_defaultLogger){
 
 		/**
 		 * separator char for language- / country-code (specific to TTS service)
@@ -43,11 +43,6 @@ define(['mmirf/mediaManager', 'mmirf/configurationManager', 'mmirf/languageManag
 		 * @private
 		 */
 		var _getLangParam;
-		/** @memberOf mmir.env.media.MaryWebAudioTTSImpl#
-		 * @private
-		 */
-		var _getVoiceParam;
-
 		/**
 		 * HELPER retrieve language setting and apply impl. specific corrections/adjustments
 		 * (i.e. deal with MARY specific quirks for language/country codes)
@@ -62,105 +57,75 @@ define(['mmirf/mediaManager', 'mmirf/configurationManager', 'mmirf/languageManag
 			return lang.fixLang('mary', locale);
 		};
 
-		/**
-		 * HELPER parse raw voice information
-		 * @param {String} str the raw line decribing the voice (as returned from service)
-		 * @memberOf mmir.env.media.MaryWebAudioTTSImpl#
-		 * @private
-		 */
-		var _toVoiceDetails = function(str){
+		var synchronousRequest = function(url, requestOptions){
+			const xhr = new XMLHttpRequest();
+			xhr.open(requestOptions.method, url, false);
 
-			var infos = str? str.trim().split(/\s/) : [];
-			return {
-				name: infos[0],
-				language: infos[1],
-				gender: /^(fe)?male$/i.test(infos[2])? infos[2].toLowerCase() : 'unknown',
-				local: false
-			}
-		};
-
-		/**
-		 * HELPER create filter-function for voice depending on language and/or gender
-		 * @param {VoiceOptions} options for listing voices:
-		 * 				options.language: the language code (may include country code)
-		 * @memberOf mmir.env.media.MaryWebAudioTTSImpl#
-		 * @private
-		 */
-		var _createVoiceFilter = function(options){
-
-			var reLang = null, reStr = null;
-			if(options.language){
-				var parts = options.language.split(/[-_]/);
-				reStr = '^'+parts[0];
-				if(parts[1]){
-					reStr += '[-_]'+parts[1]+'$';
-				}
-				reLang = new RegExp(reStr, 'i');
+			for (const header in requestOptions.headers) {
+				xhr.setRequestHeader(header, requestOptions.headers[header]);
 			}
 
-			var reName = null;
-			var reGender = null;
-			if(options.details){
+			xhr.send(requestOptions.body);
 
-				reStr = options.details.name;
-				if(reStr){
-					reName = new RegExp('^'+reStr+'$', 'i');
-				}
-
-				reStr = options.details.gender;
-				if(reStr){
-					reGender = new RegExp('^'+reStr+'$', 'i');
-				}
+			if (xhr.status === 200) {
+				console.log("Response received:", xhr.responseText);
+				return JSON.parse(xhr.responseText);
+			} else {
+				console.error("Error:", xhr.status);
+				return null;
 			}
-
-			return function(voice){
-				return (!reLang || reLang.test(voice.language)) && (!reName || reName.test(voice.name)) && (!reGender || reGender.test(voice.gender));
-			}
-		};
+		}
 
 		/**  @memberOf mmir.env.media.MaryWebAudioTTSImpl#
 		 * @private
 		 */
 		var generateTTSURL = function(text, options){
 
-			text = encodeURIComponent(text);
+			getLanguageList(function(data){console.log(data)}, function(data){console.log("error:", + data)});
+
+			console.log("TEXT: ", text);
 
 			var lang = _getFixedLang(options);
+			console.log("lang: ", lang);
 
-			var voice = _getVoiceParam(options);
-			var voiceParamStr = voice? '&VOICE='+voice : '';
+			let payload = {
+				"data": [
+					lang,
+					text	
+				]
+			};
 
-			return config.get([_pluginName, "baseUrl"], _defaultServerPath) +'process?INPUT_TYPE=TEXT&OUTPUT_TYPE=AUDIO&INPUT_TEXT=' + text + '&LOCALE='+lang + voiceParamStr + '&AUDIO=WAVE_FILE';
+			const headers = {
+				"Content-Type": "application/json"
+			}; 
+
+			const url = "https://dfki-3109.dfki.de/tts/run/predict";
+			
+			const requestOptions = {
+				method: "POST",
+				headers: headers,
+				body: JSON.stringify(payload)
+			};
+
+			let responseJSON = synchronousRequest(url, requestOptions);
+
+			console.log(responseJSON);
+
+			return "https://dfki-3109.dfki.de/tts/file=" + responseJSON["data"][0]["name"];
 		};
 
 		/**  @memberOf mmir.env.media.MaryWebAudioTTSImpl#
 		 * @private
 		 */
 		var createAudio = function(sentence, options, onend, onerror, oninit){
-
+			console.log("creating audio");
+			let url = generateTTSURL(sentence, options);
+			console.log("URL: ", url);
 			return mediaManager.getURLAsAudio(
-					generateTTSURL(sentence, options),
+					url,
 					onend, onerror, oninit
 			);
 
-		};
-
-		/** @memberOf mmir.env.media.MaryWebAudioTTSImpl#
-		 * @requires CrossDomain and CSP: allow access to baseUrl (default: "http://mary.dfki.de:59125/")
-		 * @private
-		 */
-		var getList = function(type, callback, onerror){
-
-			var url = config.get([_pluginName, "baseUrl"], _defaultServerPath) + (type === 'voice'? 'voices' : 'locales');
-			load({
-				url: url,
-				dataType: 'text',
-				success: function(data){
-					// console.log(data)
-					callback && callback(data? data.trim().split(/\r?\n/) : []);
-				},
-				error: onerror
-			});
 		};
 
 		/** @memberOf mmir.env.media.MaryWebAudioTTSImpl#
@@ -169,8 +134,7 @@ define(['mmirf/mediaManager', 'mmirf/configurationManager', 'mmirf/languageManag
 		 * @private
 		 */
 		var getLanguageList = function(callback, onerror){
-
-			getList('language', callback, onerror);
+			callback(["de", "en"]);
 		};
 
 
@@ -180,14 +144,7 @@ define(['mmirf/mediaManager', 'mmirf/configurationManager', 'mmirf/languageManag
 		 * @private
 		 */
 		var getVoiceList = function(options, callback, onerror){
-
-			getList('voice', function(list){
-				var voices = list.map(function(raw){ return _toVoiceDetails(raw);});
-				var isFilter = options && (options.language || (options.details && (options.details.name || options.details.gender)));
-				var filteredList = !isFilter? voices : voices.filter(_createVoiceFilter(options));
-				var isDetails = options && options.details;
-				callback && callback(isDetails? filteredList : filteredList.map(function(v){ return v.name;}));
-			}, onerror);
+			callback([]);	
 		};
 
 		/**  @memberOf mmir.env.media.MaryWebAudioTTSImpl# */

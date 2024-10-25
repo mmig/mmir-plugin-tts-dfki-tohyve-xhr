@@ -13,7 +13,7 @@ import { MediaManagerPluginEntry, SpeechConfigPluginEntry } from 'mmir-lib';
  * (if specified via the options, values will override configuration settings).
  */
 export interface PluginConfig {
-  ttsNuanceXhr?: PluginConfigEntry | PluginSpeechConfigEntry;
+  ttsDFKI?: PluginConfigEntry | PluginSpeechConfigEntry;
 }
 
 /**
@@ -70,5 +70,5 @@ export interface PluginConfigEntry extends MediaManagerPluginEntry {
 }
 
 export enum RemoteUrls {
-  baseUrl = 'https://tts.nuancemobility.net'
+  baseUrl = 'https://dfki-3109.dfki.de/tts/run/predict'
 }

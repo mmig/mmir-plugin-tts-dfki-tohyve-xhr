@@ -2,7 +2,7 @@
   "name": "mmir-plugin-tts-nuance-xhr",
   "version": "0.3.0",
   "description": "Cordova plugin for the MMIR framework that adds Text To Speech (TTS) synthesis via Nuance web services",
-  "main": "./www/ttsNuanceXhr.js",
+  "main": "./www/ttsDFKI.js",
   "directories": {
     "lib": "./www"
   },
