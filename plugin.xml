@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin
     xmlns="http://cordova.apache.org/ns/plugins/1.0"
-    id="mmir-plugin-tts-dfki"
+    id="mmir-plugin-tts-dfki-tohyve-xhr"
     version="0.1.0">
 
-    <name>Nuance Web Speech Synthesis</name>
+    <name>DFKI-NLP ToHyVe Web Speech Synthesis</name>
 
     <keywords>cordova,speech,tts,synthesis</keywords>
 
     <description>
-      Cordova plugin for the MMIR framework that adds Text To Speech (TTS) synthesis via Nuance web services
+      Cordova plugin for the MMIR framework that adds Text To Speech (TTS) synthesis via DFKI-NLP ToHyVe TTS web services
     </description>
 
-    <author>russa, DFKI</author>
+    <author>DerGuteste, russa (DFKI)</author>
 
     <engines>
         <engine name="cordova" version=">=5.0" />
@@ -22,14 +22,9 @@
     <preference name="MMIR_PLUGIN_MODE" default="normal" />
     <hook src="res/js/before_plugin_install_hook.js" type="before_plugin_install" />
 
-    <dependency id="mmir-plugin-speech-nuance-lang" version="^1.1.0" />
-
-    <!-- TODO add when adding support for AMR codec to Nuance TTS over HTTPS: -->
-    <!--dependency id="mmir-plugin-encoder-amr" url="." subdir="mmir-plugin-encoder-amr" /-->
-
     <!-- ASR plugin implementation for integration into MMIR framework  -->
     <asset
-        src="www/ttsDFKI.js"
-        target="mmirf/env/media/ttsDFKI.js" />
+        src="www/ttsDFKIToHyVeXhr.js"
+        target="mmirf/env/media/ttsDFKIToHyVeXhr.js" />
 
 </plugin>

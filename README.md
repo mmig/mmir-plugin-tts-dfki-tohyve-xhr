@@ -1,29 +1,15 @@
-# mmir-plugin-tts-nuance-web
+# mmir-plugin-tts-dfki-tohyve-xhr
 
-----
-----
-
-<h1 style="color: red;">
-DEPRECATED this plugin is outdated since Nuance SpeechKit service is discontinued, for a current alternative see <a href="https://github.com/mmig/mmir-plugin-tts-cerence-ws">mmir-plugin-tts-cerence-ws</a>
-</h1>
-
-```diff
-- DEPRECATED Nuance SpeechKit service is discontinued
-- for a current alternative see https://github.com/mmig/mmir-plugin-tts-cerence-ws based on the Cerence WebSocket API
-```
-
-----
-----
-
-Cordova plugin for the MMIR framework that adds Text To Speech (TTS) synthesis via Nuance web services
+Cordova plugin for the MMIR framework that adds Text To Speech (TTS) synthesis via [DFKI-NLP ToHyVe TTS web services][1]
+(based on [Nvidia NeMo 2.0][2])
 
 
 ## configure CSP
 
-(e.g. index.html): allow access to https://tts.nuancemobility.net
+(e.g. index.html): allow access to the URL of the TTS service, e.g. `https://dfki-3109.dfki.de`
 ```
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://tts.nuancemobility.net ...
+        content="default-src https://dfki-3109.dfki.de ...
 ```
 
 
@@ -31,25 +17,18 @@ Cordova plugin for the MMIR framework that adds Text To Speech (TTS) synthesis v
 ```
 {
 
-...
-
-	"ttsNuanceXhr": {
-      "appId": <the app ID>,
-      "appKey": <the secret app key>
-    },
-
-	....
+	...
 
 	"mediaManager": {
     	"plugins": {
     		"browser": [
     			...
-                {"mod": "webAudioTextToSpeech", "config": "ttsNuanceXhr"},
+                {"mod": "webAudioTextToSpeech", "config": "ttsDFKIToHyVeXhr"},
                 ...
     		],
     		"cordova": [
     			...
-                {"mod": "webAudioTextToSpeech", "config": "ttsNuanceXhr"},
+                {"mod": "webAudioTextToSpeech", "config": "ttsDFKIToHyVeXhr"},
                 ...
     		]
     	}
@@ -59,11 +38,12 @@ Cordova plugin for the MMIR framework that adds Text To Speech (TTS) synthesis v
 }
 ```
 
-supported options for recoginze() / startRecord():
- * language: String
+supported options for recognize() / startRecord():
+ * `language`: String
 
-supported custom options for recoginze() / startRecord():
- * appKey: String
- * appId: String
- * format: "mp3" (default) | "wav" | "pcm"
- * sampleRate: (only valid for "wav"/"pcm") 8000 | 16000 | 22000
+supported custom options for recognize() / startRecord():  
+ _no custom options supported_
+
+
+[1]: https://github.com/DFKI-NLP/tohyve-services/tree/master/text_to_speech_conversion
+[2]: https://docs.nvidia.com/nemo-framework/user-guide/latest/nemotoolkit/tts/intro.html
